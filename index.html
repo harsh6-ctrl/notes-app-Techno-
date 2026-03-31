@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduStream | B.Tech Notes Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+</head>
+<body>
+
+    <header id="header">
+        <a href="index.html" class="logo">TECH<span>NO</span></a>
+        <ul id="navbar">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#explore">Explore Notes</a></li>
+            <li><a href="#about">About</a></li>
+            <li><button class="login-btn" onclick="openAuth()">Student Login</button></li>
+        </ul>
+
+        <!-- THEME SWITCHER -->
+<div id="themeSwitcher">
+    <button id="themeToggleBtn" onclick="toggleThemeMenu()">🌙 Theme</button>
+    <div id="themeMenu">
+        <button onclick="setTheme('light')">☀️ Light</button>
+        <button onclick="setTheme('dark')">🌙 Dark</button>
+        <button onclick="setTheme('read')">📖 Read</button>
+        <button onclick="setTheme('auto')">🖥️ Auto</button>
+    </div>
+</div>
+
+    </header>
+ 
+      
+
+
+    <section id="hero">
+        <h1>All B.Tech Notes in One Place</h1>
+        <p>From 1st Year Basics to Final Year Specializations. Curated Playlists & PDF Notes.</p>
+        <a href="#explore" class="btn">Start Learning</a>
+    </section>
+
+   <section id="explore" class="section-p1">
+        <h2>Select Your Year</h2>
+        <div class="search-container" style="text-align:center; margin: 20px;">
+            <input type="text" id="searchInput" onkeyup="searchSubjects()" placeholder="🔍 Search for subjects, notes, or topics...">
+        </div>
+
+        <div class="year-container">
+            <button class="year-btn active" onclick="filterYear(1)">1st Year</button>
+            <button class="year-btn" onclick="filterYear(2)">2nd Year</button>
+            <button class="year-btn" onclick="filterYear(3)">3rd Year</button>
+            <button class="year-btn" onclick="filterYear(4)">4th Year</button>
+        </div>
+
+        <div id="subjectGrid" class="subject-grid">
+            </div>
+    </section>
+
+
+    <section id="contact" class="section-p1">
+    <div class="contact-container">
+        <div class="contact-info">
+            <span>GET IN TOUCH</span>
+            <h2>Visit our office or contact us today</h2>
+            <h3>Head Office</h3>
+            <div>
+                <li>
+                    <i class="fas fa-map-marker-alt"></i>
+                    <p>Jaipur, Rajasthan, India</p>
+                </li>
+                <li>
+                    <i class="fas fa-envelope"></i>
+                    <p>techno.support06@gmail.com</p>
+                </li>
+                
+                <li>
+                    <i class="fas fa-clock"></i>
+                    <p>Monday to Saturday: 9.00am to 16.00pm</p>
+                </li>
+            </div>
+        </div>
+
+        <div class="contact-form">
+            <form action="">
+                <span>LEAVE A MESSAGE</span>
+                <h2>We love to hear from you</h2>
+                <input type="text" placeholder="Your Name" required>
+                <input type="email" placeholder="E-mail" required>
+                <input type="text" placeholder="Subject">
+                <textarea name="" id="" cols="30" rows="10" placeholder="Your Message" required></textarea>
+                <button class="btn" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+    <footer id="footer">
+        <div class="footer-container">
+            <div class="footer-col logo-col">
+                <a href="index.html" class="logo" style="color: white; font-size: 30px; font-weight: 800; text-decoration: none; letter-spacing: 1px;">
+                    TECH<span style="color: #088178;">NO</span><span style="color: #088178;">.</span>
+                </a>
+                <p style="margin-top: 15px; color: #ccc; font-size: 13px; line-height: 1.5;">
+                    Empowering B.Tech students with precision-crafted notes and curated learning paths.
+                </p>
+            </div>
+
+            <div class="footer-col about-col" id="about">
+                <h3>About TECHNO</h3>
+                <p>
+                    Thank you for visiting <strong>TECHNO</strong>. We simplify complex engineering subjects through handwritten notes and top-tier YouTube resources. <br><br>
+                    Keep Rising 🚀.
+                </p>
+                
+            </div>
+
+            <div class="footer-col links-col">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#" onclick="filterYear(1)">1st Year</a></li>
+                    <li><a href="#" onclick="filterYear(2)">2nd Year</a></li>
+                    <li><a href="#" onclick="filterYear(3)">3rd Year</a></li>
+                    <li><a href="#" onclick="filterYear(4)">4th Year</a></li>
+                  
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© Copyright 2026 Harsh - All Rights Reserved</p>
+            <p>Designed and Developed by <a href="#" style="color: #088178; text-decoration: none;">Harsh</a></p>
+        </div>
+
+        <button id="scrollActionBtn" title="Navigate">
+            <i id="scrollIcon" class="fas fa-chevron-down"></i>
+        </button>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
