@@ -11,6 +11,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
+
 // Routes
 const authRoutes = require("./routes/auth");
 const subjectsRoutes = require("./routes/subjects");
