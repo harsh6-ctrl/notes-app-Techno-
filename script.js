@@ -8,7 +8,7 @@ const firebaseConfig = {
     measurementId: "G-JWTZHDXK7J"
 };
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://notes-app-techno.onrender.com/api";
 
 // ================= GLOBAL STORES =================
 let allSubjects = [];
@@ -393,3 +393,6 @@ document.addEventListener("click", (e) => {
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (localStorage.getItem("theme") === "auto") setTheme("auto");
 });
+
+
+
