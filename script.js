@@ -167,34 +167,6 @@ function renderProgressBar() {
 }
 
 // ================= AUTH =================
-async function handleLogin() {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
-
-    try {
-        const res = await fetch(`${API_URL}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            alert(data.message);
-            return;
-        }
-
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        loadProgress();
-
-    } catch (err) {
-        alert("Login failed");
-    }
-}
-
 
 
 
