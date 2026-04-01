@@ -7,8 +7,7 @@ const firebaseConfig = {
     appId: "1:685060656861:web:6e6a237312824e51c71534",
     measurementId: "G-JWTZHDXK7J"
 };
-
-const API_URL = "https://notes-app-techno.onrender.com/api";
+const API_URL = "/api";
 
 // ================= GLOBAL STORES =================
 let allSubjects = [];
