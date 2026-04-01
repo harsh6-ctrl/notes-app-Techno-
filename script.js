@@ -208,3 +208,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadSubjects();
 });
+
+
+
+// ================= SCROLL BUTTON =================
+const scrollBtn = document.getElementById("scrollActionBtn");
+const scrollIcon = document.getElementById("scrollIcon");
+
+window.onscroll = function() {
+    if (window.scrollY < 400) {
+        scrollIcon.classList.remove("fa-chevron-up");
+        scrollIcon.classList.add("fa-chevron-down");
+    } else {
+        scrollIcon.classList.remove("fa-chevron-down");
+        scrollIcon.classList.add("fa-chevron-up");
+    }
+};
+
+scrollBtn.onclick = function() {
+    if (window.scrollY < 400) {
+        document.getElementById("explore").scrollIntoView({ behavior: "smooth" });
+    } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+};
+
+// ================= THEME SYSTEM =================
+function toggleThemeMenu() {
+    document.getElementById("themeMenu").classList.toggle("open");
+}
+
+function setTheme(mode) {
+    document.body.classList.remove("light", "dark", "read");
+
+    if (mode === "auto") {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.body.classList.add(prefersDark ? "dark" : "light");
+    } else {
+        document.body.classList.add(mode);
+    }
+
+    localStorage.setItem("theme", mode);
+
+    // Update active button
+    document.querySelectorAll("#themeMenu button").forEach(btn => {
+        btn.classList.remove("active-theme");
+        if (btn.textContent.toLowerCase().includes(mode)) {
+            btn.classList.add("active-theme");
+        }
+    });
+
+    // Update toggle button icon
+    const icons = { light: "☀️", dark: "🌙", read: "📖", auto: "🖥️" };
+    document.getElementById("themeToggleBtn").textContent = `${icons[mode]} Theme`;
+
+    // Close menu after selecting
+    document.getElementById("themeMenu").classList.remove("open");
+}
+
+function loadSavedTheme() {
+    const saved = localStorage.getItem("theme") || "auto";
+    setTheme(saved);
+}
+
+// Close menu if clicking outside
+document.addEventListener("click", (e) => {
+    if (!document.getElementById("themeSwitcher").contains(e.target)) {
+        document.getElementById("themeMenu").classList.remove("open");
+    }
+});
+
+// Listen for system theme changes (for auto mode)
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (localStorage.getItem("theme") === "auto") setTheme("auto");
+});
+
+
+
