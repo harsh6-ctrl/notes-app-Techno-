@@ -8,7 +8,6 @@ const firebaseConfig = {
     measurementId: "G-JWTZHDXK7J"
 };
 
-// ✅ FIXED API URL
 const API_URL = "https://notes-app-techno.onrender.com/api";
 
 // ================= GLOBAL STORES =================
@@ -17,70 +16,74 @@ let userProgress = [];
 let currentYear = 1;
 function getCurrentYear() { return currentYear; }
 
-// ================= FETCH SUBJECTS =================
+// ================= FETCH SUBJECTS FROM BACKEND =================
 async function loadSubjects() {
     try {
         const res = await fetch(`${API_URL}/subjects`);
         const data = await res.json();
-
-        if (!Array.isArray(data)) {
-            console.error("Subjects not array:", data);
-            allSubjects = [];
-        } else {
-            allSubjects = data;
-        }
-
+        allSubjects = Array.isArray(data) ? data : [];
         filterYear(1);
-
     } catch (err) {
         console.error("Failed to load subjects:", err);
+        document.getElementById("subjectGrid").innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:50px;">
+                <h3 style="color:#e74c3c;">Could not load subjects. Make sure the server is running.</h3>
+            </div>`;
     }
 }
 
-// ================= RENDER =================
+// ================= RENDER CARDS =================
 function renderCards(subjects) {
     const grid = document.getElementById("subjectGrid");
     const token = localStorage.getItem("token");
 
     if (subjects.length === 0) {
-        grid.innerHTML = `<h3 style="text-align:center;">No subjects found</h3>`;
+        grid.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:50px;">
+                <h3 style="color:#666;">No subjects found.</h3>
+            </div>`;
         return;
     }
 
     grid.innerHTML = subjects.map(sub => {
-        const progress = Array.isArray(userProgress)
-            ? userProgress.find(p => p.subjectId === sub._id) || {}
-            : {};
+        const progress = userProgress.find(p => p.subjectId === sub._id) || {};
+        const notesViewed = progress.notesViewed || false;
+        const ytViewed = progress.youtubeViewed || false;
+        const completed = progress.completed || false;
 
         return `
-        <div class="sub-card">
-            <span>YEAR ${sub.year}</span>
+        <div class="sub-card" style="${completed ? 'border: 2px solid #088178;' : ''}">
+            <span style="color:#088178; font-size:12px; font-weight:bold;">YEAR ${sub.year}</span>
+            ${completed ? '<span style="float:right; color:#088178; font-weight:bold;">🏆 Completed</span>' : ''}
             <h3>${sub.name}</h3>
-
-            ${sub.suggestion && sub.suggestion.trim() !== "" ? `
+            ${sub.suggestion ? `
                 <p style="font-size:13px; color:#e67e22; margin:10px 0; background:#fff5eb; padding:8px; border-left:3px solid #e67e22; border-radius:4px;">
                     <strong>💡 Suggestion:</strong> ${sub.suggestion}
                 </p>
-            ` : ''}
-
+            ` : '<p style="font-size:14px; color:#666;">Complete notes and video tutorials for university exams.</p>'}
             <div class="action-btns">
                 <a href="${sub.pdf}" target="_blank"
-                   onclick="${token ? `trackProgress('${sub._id}', 'notes')` : ''}">
-                   Notes
+                   onclick="${token ? `trackProgress('${sub._id}', 'notes')` : ''}"
+                   class="pdf-btn" style="${notesViewed ? 'opacity:0.7;' : ''}">
+                   <i class="fas fa-file-pdf"></i> View Notes ${notesViewed ? '✅' : ''}
                 </a>
-
                 <a href="${sub.yt}" target="_blank"
-                   onclick="${token ? `trackProgress('${sub._id}', 'yt')` : ''}">
-                   YouTube
+                   onclick="${token ? `trackProgress('${sub._id}', 'yt')` : ''}"
+                   class="yt-btn" style="${ytViewed ? 'opacity:0.7;' : ''}">
+                   <i class="fab fa-youtube"></i> YouTube ${ytViewed ? '✅' : ''}
                 </a>
             </div>
         </div>`;
     }).join("");
 }
 
-// ================= FILTER =================
+// ================= FILTER BY YEAR =================
 function filterYear(yearNum) {
     currentYear = yearNum;
+    const buttons = document.querySelectorAll(".year-btn");
+    buttons.forEach((btn, index) => {
+        btn.classList.toggle("active", index + 1 === yearNum);
+    });
     const filtered = allSubjects.filter(item => item.year === yearNum);
     renderCards(filtered);
 }
@@ -91,36 +94,32 @@ function searchSubjects() {
     const filtered = allSubjects.filter(sub =>
         sub.name.toLowerCase().includes(query)
     );
-    renderCards(filtered);
+    if (filtered.length === 0) {
+        document.getElementById("subjectGrid").innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:50px;">
+                <h3 style="color:#666;">No subjects found for "${query}"</h3>
+                <p>Try searching for a different keyword or check your spelling.</p>
+            </div>`;
+    } else {
+        renderCards(filtered);
+    }
 }
 
-// ================= PROGRESS =================
+// ================= PROGRESS TRACKING =================
 async function loadProgress() {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
-
-    // ✅ FIX: prevent undefined crash
-    if (!token || !user || !(user._id || user.id)) {
-        userProgress = [];
-        return;
-    }
+    if (!token || !user) return;
 
     try {
         const res = await fetch(`${API_URL}/progress/${user._id || user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-
-        const data = await res.json();
-
-        // ✅ FIX: ensure array
-        userProgress = Array.isArray(data) ? data : [];
-
+        userProgress = await res.json();
         renderProgressBar();
         filterYear(getCurrentYear());
-
     } catch (err) {
-        console.error("Progress error:", err);
-        userProgress = [];
+        console.error("Failed to load progress:", err);
     }
 }
 
@@ -129,8 +128,12 @@ async function trackProgress(subjectId, type) {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!token || !user) return;
 
+    const existing = userProgress.find(p => p.subjectId === subjectId) || {};
+    const notesViewed = type === 'notes' ? true : (existing.notesViewed || false);
+    const youtubeViewed = type === 'yt' ? true : (existing.youtubeViewed || false);
+
     try {
-        await fetch(`${API_URL}/progress`, {
+        const res = await fetch(`${API_URL}/progress`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -139,36 +142,103 @@ async function trackProgress(subjectId, type) {
             body: JSON.stringify({
                 userId: user._id || user.id,
                 subjectId,
-                type
+                notesViewed,
+                youtubeViewed
             })
         });
-
-        loadProgress();
-
+        const updated = await res.json();
+        const idx = userProgress.findIndex(p => p.subjectId === subjectId);
+        if (idx > -1) userProgress[idx] = updated;
+        else userProgress.push(updated);
+        renderProgressBar();
     } catch (err) {
-        console.error("Track error:", err);
+        console.error("Failed to track progress:", err);
     }
 }
 
-// ================= PROGRESS BAR =================
 function renderProgressBar() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) return;
 
-    const total = allSubjects.length;
-
-    const completed = Array.isArray(userProgress)
-        ? userProgress.filter(p => p.completed).length
-        : 0;
-
+    const total = allSubjects.filter(s => s.year === Number(user.year)).length;
+    const completed = userProgress.filter(p => p.completed).length;
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    console.log(`Progress: ${percent}%`);
+    let bar = document.getElementById("progressBar");
+    if (!bar) {
+        const section = document.getElementById("explore");
+        section.insertAdjacentHTML("afterbegin", `
+            <div id="progressBar" style="background:#f4f7f6; padding:20px 80px; margin-bottom:20px;">
+                <p style="font-weight:600; color:#1a1a2e; margin-bottom:8px;">
+                    📊 Your Progress: <span id="progressText">${completed}/${total} subjects completed (${percent}%)</span>
+                </p>
+                <div style="background:#ddd; border-radius:50px; height:12px;">
+                    <div id="progressFill" style="background:#088178; height:12px; border-radius:50px; width:${percent}%; transition:0.5s;"></div>
+                </div>
+            </div>`);
+    } else {
+        document.getElementById("progressText").textContent = `${completed}/${total} subjects completed (${percent}%)`;
+        document.getElementById("progressFill").style.width = `${percent}%`;
+    }
 }
 
-// ================= AUTH =================
+// ================= AUTH SYSTEM =================
+function openAuth() {
+    if (!document.getElementById("authModal")) {
+        const authHTML = `
+        <div id="authModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:2000;">
+            <div style="background:white; padding:40px; border-radius:15px; width:350px; text-align:center; position:relative;">
+                <h2 id="authTitle" style="margin-bottom:20px; color:#1a1a2e;">Student Login</h2>
+                <div id="loginForm">
+                    <input id="loginEmail" type="email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                    <input id="loginPassword" type="password" placeholder="Password" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                    <p id="loginError" style="color:red; font-size:13px; margin-bottom:10px; display:none;"></p>
+                    <button onclick="handleLogin()" style="width:100%; padding:12px; background:#088178; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Login</button>
+                    <p style="margin-top:15px; font-size:13px; color:#666;">Don't have an account? <a href="#" onclick="showRegister()" style="color:#088178;">Register here</a></p>
+                </div>
+                <div id="registerForm" style="display:none;">
+                    <input id="regName" type="text" placeholder="Full Name" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                    <input id="regEmail" type="email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                    <input id="regPassword" type="password" placeholder="Password" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                    <input id="regRoll" type="text" placeholder="Roll Number" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                    <select id="regYear" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd; border-radius:5px;">
+                        <option value="">Select Year</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                    <p id="regError" style="color:red; font-size:13px; margin-bottom:10px; display:none;"></p>
+                    <button onclick="handleRegister()" style="width:100%; padding:12px; background:#088178; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Register</button>
+                    <p style="margin-top:15px; font-size:13px; color:#666;">Already have an account? <a href="#" onclick="showLogin()" style="color:#088178;">Login here</a></p>
+                </div>
+                <button onclick="closeAuth()" style="margin-top:20px; background:none; border:none; color:#999; cursor:pointer; text-decoration:underline;">Close</button>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML("beforeend", authHTML);
+    } else {
+        document.getElementById("authModal").style.display = "flex";
+    }
+}
 
+function closeAuth() {
+    const modal = document.getElementById("authModal");
+    if (modal) modal.style.display = "none";
+}
 
+function showRegister() {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("registerForm").style.display = "block";
+    document.getElementById("authTitle").textContent = "Create Account";
+}
+
+function showLogin() {
+    document.getElementById("registerForm").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
+    document.getElementById("authTitle").textContent = "Student Login";
+}
+
+//handle login and registration
 
 async function handleLogin() {
     const email = document.getElementById("loginEmail").value;
@@ -239,22 +309,18 @@ function handleLogout() {
     location.reload();
 }
 
-
-// ================= INIT =================
+// ================= ON PAGE LOAD =================
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("API:", API_URL); // 🔥 DEBUG
-
+    loadSavedTheme();   
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (token && user) {
-        loadProgress();
+        updateNavForLoggedInUser(user);
+        loadProgress();    // ← load progress if already logged in
     }
-
     loadSubjects();
 });
-
-
 
 // ================= SCROLL BUTTON =================
 const scrollBtn = document.getElementById("scrollActionBtn");
