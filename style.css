@@ -467,3 +467,89 @@ body {
     background: #088178;
     color: white;
 }
+
+/* =========================================
+   MOBILE RESPONSIVE FIX
+   ========================================= */
+@media (max-width: 768px) {
+
+    /* Header */
+    #header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #navbar {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #navbar li {
+        padding: 10px;
+    }
+
+    /* Hero */
+    #hero {
+        height: auto;
+        padding: 40px 20px;
+    }
+
+    /* Year buttons */
+    .year-container {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .year-btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    /* Search bar */
+    .search-container {
+        padding: 0 20px;
+    }
+
+    #searchInput {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    /* Subject grid */
+    .subject-grid {
+        padding: 20px;
+        grid-template-columns: 1fr; /* 1 card per row */
+    }
+
+    /* Cards */
+    .sub-card {
+        padding: 15px;
+    }
+
+    /* Buttons */
+    .action-btns {
+        flex-direction: column;
+    }
+
+    .action-btns a {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Contact section */
+    #contact {
+        padding: 20px;
+    }
+
+    /* Floating buttons */
+    #scrollActionBtn {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    #themeSwitcher {
+        bottom: 80px;
+        right: 20px;
+    }
+}
