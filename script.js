@@ -195,11 +195,78 @@ async function handleLogin() {
     }
 }
 
-// ================= LOGOUT =================
+
+
+
+async function handleLogin() {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const errEl = document.getElementById("loginError");
+    try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errEl.textContent = data.message;
+            errEl.style.display = "block";
+            return;
+        }
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        closeAuth();
+        updateNavForLoggedInUser(data.user);
+        loadProgress();    // ← loads progress after login
+    } catch (err) {
+        errEl.textContent = "Server error. Try again.";
+        errEl.style.display = "block";
+    }
+}
+
+async function handleRegister() {
+    const name = document.getElementById("regName").value;
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
+    const rollNumber = document.getElementById("regRoll").value;
+    const year = document.getElementById("regYear").value;
+    const errEl = document.getElementById("regError");
+    try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password, rollNumber, year: Number(year) })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errEl.textContent = data.message;
+            errEl.style.display = "block";
+            return;
+        }
+        alert("Account created! Please login.");
+        showLogin();
+    } catch (err) {
+        errEl.textContent = "Server error. Try again.";
+        errEl.style.display = "block";
+    }
+}
+
+// ================= NAV UPDATE AFTER LOGIN =================
+function updateNavForLoggedInUser(user) {
+    const loginBtn = document.querySelector(".login-btn");
+    if (loginBtn) {
+        loginBtn.textContent = `👤 ${user.name}`;
+        loginBtn.onclick = handleLogout;
+    }
+}
+
 function handleLogout() {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     location.reload();
 }
+
 
 // ================= INIT =================
 document.addEventListener("DOMContentLoaded", () => {
