@@ -57,6 +57,12 @@ function renderCards(subjects) {
             <span>YEAR ${sub.year}</span>
             <h3>${sub.name}</h3>
 
+            ${sub.suggestion && sub.suggestion.trim() !== "" ? `
+                <p style="font-size:13px; color:#e67e22; margin:10px 0; background:#fff5eb; padding:8px; border-left:3px solid #e67e22; border-radius:4px;">
+                    <strong>💡 Suggestion:</strong> ${sub.suggestion}
+                </p>
+            ` : ''}
+
             <div class="action-btns">
                 <a href="${sub.pdf}" target="_blank"
                    onclick="${token ? `trackProgress('${sub._id}', 'notes')` : ''}">
