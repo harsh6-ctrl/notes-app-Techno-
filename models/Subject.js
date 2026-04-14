@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 
 const subjectSchema = new mongoose.Schema({
-    year: { type: Number, required: true, enum: [1, 2, 3, 4] },
     name: { type: String, required: true },
-    pdf: { type: String },
-    yt: { type: String },
-    suggestion: { type: String }
+    code: { type: String, required: true },
+    pyqs: { type: [String], default: [] },
+    importantTopics: { type: [String], default: [] }
 });
 
 module.exports = mongoose.model('Subject', subjectSchema);
