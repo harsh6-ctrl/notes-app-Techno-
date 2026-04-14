@@ -51,6 +51,33 @@ function renderCards(subjects) {
         const ytViewed = progress.youtubeViewed || false;
         const completed = progress.completed || false;
 
+        // ✅ Build onclick strings separately to avoid nested backtick issue
+        const notesOnclick = token ? `onclick="trackProgress('${sub._id}', 'notes')"` : '';
+        const ytOnclick    = token ? `onclick="trackProgress('${sub._id}', 'yt')"` : '';
+
+        // ✅ Build each button separately
+        const pdfBtn = sub.pdf ? `
+            <a href="${sub.pdf}" target="_blank" ${notesOnclick}
+               class="pdf-btn" style="${notesViewed ? 'opacity:0.7;' : ''}">
+               <i class="fas fa-file-pdf"></i> View Notes ${notesViewed ? '✅' : ''}
+            </a>` : '';
+
+        const ytBtn = sub.yt ? `
+            <a href="${sub.yt}" target="_blank" ${ytOnclick}
+               class="yt-btn" style="${ytViewed ? 'opacity:0.7;' : ''}">
+               <i class="fab fa-youtube"></i> YouTube ${ytViewed ? '✅' : ''}
+            </a>` : '';
+
+        const pyqsBtn = sub.pyqs ? `
+            <a href="${sub.pyqs}" target="_blank" class="pyqs-btn">
+               <i class="fas fa-file-alt"></i> PYQs
+            </a>` : '';
+
+        const impBtn = sub.importantTopics ? `
+            <a href="${sub.importantTopics}" target="_blank" class="imp-btn">
+               <i class="fas fa-star"></i> Important Topics
+            </a>` : '';
+
         return `
         <div class="sub-card" style="${completed ? 'border: 2px solid #088178;' : ''}">
             <span style="color:#088178; font-size:12px; font-weight:bold;">YEAR ${sub.year}</span>
@@ -62,21 +89,14 @@ function renderCards(subjects) {
                 </p>
             ` : '<p style="font-size:14px; color:#666;">Complete notes and video tutorials for university exams.</p>'}
             <div class="action-btns">
-                <a href="${sub.pdf}" target="_blank"
-                   onclick="${token ? `trackProgress('${sub._id}', 'notes')` : ''}"
-                   class="pdf-btn" style="${notesViewed ? 'opacity:0.7;' : ''}">
-                   <i class="fas fa-file-pdf"></i> View Notes ${notesViewed ? '✅' : ''}
-                </a>
-                <a href="${sub.yt}" target="_blank"
-                   onclick="${token ? `trackProgress('${sub._id}', 'yt')` : ''}"
-                   class="yt-btn" style="${ytViewed ? 'opacity:0.7;' : ''}">
-                   <i class="fab fa-youtube"></i> YouTube ${ytViewed ? '✅' : ''}
-                </a>
+                ${pdfBtn}
+                ${ytBtn}
+                ${pyqsBtn}
+                ${impBtn}
             </div>
         </div>`;
     }).join("");
 }
-
 // ================= FILTER BY YEAR =================
 function filterYear(yearNum) {
     currentYear = yearNum;
@@ -111,15 +131,27 @@ async function loadProgress() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!token || !user) return;
 
+    // ✅ Fix: try all possible ID fields from your backend
+    const userId = user._id || user.id || user.userId;
+    if (!userId) {
+        console.warn("No user ID found:", user);
+        return;  // ← stops the /undefined call
+    }
+
     try {
-        const res = await fetch(`${API_URL}/progress/${user._id || user.id}`, {
+        const res = await fetch(`${API_URL}/progress/${userId}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-        userProgress = await res.json();
+        const data = await res.json();
+
+        // ✅ Fix: always ensure userProgress is an array
+        userProgress = Array.isArray(data) ? data : [];
+
         renderProgressBar();
         filterYear(getCurrentYear());
     } catch (err) {
         console.error("Failed to load progress:", err);
+        userProgress = []; // ✅ Fix: reset to array on error
     }
 }
 
@@ -127,6 +159,10 @@ async function trackProgress(subjectId, type) {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
     if (!token || !user) return;
+
+    // ✅ Fix: same ID field fix
+    const userId = user._id || user.id || user.userId;
+    if (!userId) return;
 
     const existing = userProgress.find(p => p.subjectId === subjectId) || {};
     const notesViewed = type === 'notes' ? true : (existing.notesViewed || false);
@@ -140,7 +176,7 @@ async function trackProgress(subjectId, type) {
                 Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({
-                userId: user._id || user.id,
+                userId,   // ✅ Fix: use resolved userId
                 subjectId,
                 notesViewed,
                 youtubeViewed
@@ -393,6 +429,3 @@ document.addEventListener("click", (e) => {
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (localStorage.getItem("theme") === "auto") setTheme("auto");
 });
-
-
-
