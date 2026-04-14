@@ -65,6 +65,9 @@
 
 .pdf-btn { background: #e74c3c; color: white; }
 .yt-btn { background: #ff0000; color: white; }
+.pyqs-btn { background: #8e44ad; color: white; }
+.imp-btn  { background: #e67e22; color: white; }
+
 /* Container to center the search bar */
 .search-container {
     text-align: center;
